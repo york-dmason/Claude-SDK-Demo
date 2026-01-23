@@ -1,43 +1,25 @@
 # Claude Agent SDK × Confluence POC
 
-**Project Context, Scope, and Next Steps**
+A proof-of-concept CLI application that uses Claude Agent SDK to query Confluence documentation through CData Connect AI's MCP (Model Context Protocol) server. This enables natural language Q&A over your Confluence content with read-only access.
 
 ---
 
-## 1. What Has Already Been Completed
+## Project Brief
 
-### Infrastructure & Access
+### What This Does
 
-* **CData Connect AI** is set up and authenticated
-* **Confluence Cloud** is successfully connected using:
-  * Atlassian API Token authentication
-  * Read-only access
-  * Existing user permissions (no admin access required)
-* Connection status is **Authenticated**
-* Confluence data model is visible, including tables such as:
-  * `Spaces`
-  * `Pages`
-  * `PageChildren`
-  * `PageAncestors`
-  * `Comments`
-  * `Attachments`
+This POC demonstrates how Claude can safely query and summarize Confluence documentation using:
+- **Claude Agent SDK** for AI agent capabilities
+- **CData Connect AI** as an MCP server bridge
+- **Confluence Cloud** as the data source (read-only)
 
-### Security & Governance
+The assistant can:
+- Discover available Confluence spaces and pages
+- Summarize project documentation
+- Answer questions based on Confluence content
+- Extract structured information (goals, scope, risks, decisions)
 
-* No passwords are used
-* No data is copied or stored outside Confluence
-* Queries respect existing Confluence permissions
-* This is a **read-only, demo-safe** configuration
-
-### Intended AI Layer
-
-* **Claude Agent SDK (Python)** will be used
-* Claude will interact with Confluence **only via MCP tools exposed by CData**
-* No direct Confluence API calls from the app
-
----
-
-## 2. Current Architecture (As Built)
+### Architecture
 
 ```
 Claude Agent SDK (Python CLI)
@@ -47,171 +29,257 @@ CData Connect AI (MCP Server)
 Confluence Cloud (Read-only)
 ```
 
-Key characteristics:
+### Key Features
 
-* Claude dynamically discovers tools via MCP
-* Claude issues structured queries against Confluence tables
-* Claude receives results and produces synthesized, human-readable summaries
+- **Read-only access** - No modifications to Confluence
+- **Dynamic tool discovery** - Automatically discovers available Confluence tables via MCP
+- **Structured responses** - Summarized, readable output with source attribution
+- **Stateful conversations** - Maintains context across multiple queries
+- **Demo-safe** - Respects existing permissions, no data storage
 
----
+### Constraints
 
-## 3. Project Scope (Defined & Locked)
-
-### In Scope
-
-* **Single data source:** Confluence only
-* **Read-only access**
-* CLI-based demo (no UI)
-* Natural language queries over Confluence documentation
-* Summarization, extraction, and Q&A over real company docs
-* Clear source attribution in responses
-* Safe, structured output (no raw dumps)
-
-### Out of Scope
-
-* Jira, GitHub, Microsoft 365 (future phases)
-* Write operations or content updates
-* Fine-tuning or training
-* Production deployment
-* Long-term storage or indexing
-* Autonomous background agents
-
-This is a **proof of concept**, not a production system.
+- **Single data source:** Confluence only (no Jira, GitHub, etc.)
+- **Read-only:** No write operations to Confluence
+- **CLI-based:** Command-line interface only (no UI)
+- **POC scope:** Not intended for production deployment
 
 ---
 
-## 4. Primary Demo Use Cases (What the POC Must Show)
+## Prerequisites
 
-### Use Case 1: Discovery
+Before setting up locally, ensure you have:
 
-* List available Confluence spaces
-* Describe what type of content exists in each
-
-### Use Case 2: Project Understanding (Core Demo)
-
-* Summarize "Project Kickoff" / "Project Scope" documentation
-* Extract:
-  * Goals
-  * Scope
-  * Known risks
-  * Open questions
-  * Next steps
-
-### Use Case 3: Q&A Over Docs
-
-* Answer follow-up questions using Confluence content
-* Identify what is documented vs what is missing
+1. **Python 3.8+** installed
+2. **CData Connect AI account** with:
+   - Email address
+   - Personal Access Token
+   - Confluence Cloud connection configured and authenticated
+3. **Anthropic API key** for Claude Agent SDK
+4. **Claude CLI** installed globally (optional, for SDK compatibility)
 
 ---
 
-## 5. Success Criteria (Definition of Done)
+## Local Setup Instructions
 
-The POC is successful when:
+### Step 1: Clone or Navigate to the Project
 
-* Claude can list Confluence spaces and pages
-* Claude can summarize real project documentation accurately
-* Claude can answer follow-up questions grounded in Confluence data
-* Responses are:
-  * Structured
-  * Readable by non-technical stakeholders
-  * Explicit about sources
-* The demo can be run end-to-end locally via CLI
+```bash
+cd "/Users/yorkmacbook020/Desktop/York Solutions/January/Claude SDK Demo"
+```
+
+### Step 2: Create Python Virtual Environment
+
+```bash
+# Create virtual environment
+python3 -m venv venv
+
+# Activate virtual environment
+# On macOS/Linux:
+source venv/bin/activate
+# On Windows:
+# venv\Scripts\activate
+```
+
+### Step 3: Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+This installs:
+- `claude-agent-sdk` - Claude Agent SDK for Python
+- `python-dotenv` - Environment variable management
+- `requests` - HTTP client for MCP server communication
+
+### Step 4: Install Claude CLI (Optional but Recommended)
+
+```bash
+npm install -g @anthropic-ai/claude-code
+```
+
+Verify installation:
+```bash
+which claude  # Should show path to claude executable
+```
+
+### Step 5: Configure Environment Variables
+
+Create a `.env` file in the project root:
+
+```bash
+# Copy example if available, or create new file
+cp .env.example .env  # If .env.example exists
+# OR create manually:
+touch .env
+```
+
+Add the following to your `.env` file:
+
+```env
+# CData Connect AI Credentials
+CDATA_EMAIL=your-email@example.com
+CDATA_ACCESS_TOKEN=your-personal-access-token
+
+# Anthropic API Key
+ANTHROPIC_API_KEY=sk-ant-api03-your-key-here
+```
+
+**Important:** 
+- Never commit the `.env` file (it's in `.gitignore`)
+- Get your CData credentials from your CData Connect AI account
+- Get your Anthropic API key from https://console.anthropic.com/
+
+### Step 6: Verify CData Connect AI Connection
+
+Ensure your CData Connect AI account has:
+- Confluence Cloud connection configured
+- Connection status is "Authenticated"
+- Read-only access permissions set
+
+The MCP server URL is hardcoded to: `https://mcp.cloud.cdata.com/mcp/`
+
+### Step 7: Run the Application
+
+```bash
+python agent_chatbot.py
+```
+
+You should see:
+```
+============================================================
+Claude Confluence Assistant
+============================================================
+MCP Server: https://mcp.cloud.cdata.com/mcp/
+
+Connecting to CData Connect AI MCP server...
+Loaded X tools from MCP server
+
+Available tools:
+   - getInstructions
+   - queryData
+   - getCatalogs
+   ...
+
+Confluence Assistant Ready!
+Try: 'What Confluence spaces are available to me?'
+Type 'quit' to exit.
+```
+
+### Step 8: Test with Demo Prompts
+
+Try these example queries:
+
+- `What Confluence spaces are available to me?`
+- `List recent pages related to project kickoff or scope.`
+- `Summarize the Project Kickoff and Scope documentation.`
+- `What decisions have already been made according to Confluence?`
+- `What risks or open questions are documented?`
+
+Type `quit` or `exit` to end the session.
 
 ---
 
-## 6. What Still Needs to Be Built
+## Project Structure
 
-### Code-Level Work
-
-1. Run the existing **Claude Agent SDK example project**
-2. Confirm MCP tool discovery includes Confluence tables
-3. Add a **custom system prompt** to guide behavior:
-   * Read-only
-   * Summarize, don't dump
-   * Cite Confluence as source
-   * Ask clarifying questions when data is missing
-4. Add a small wrapper or helper to:
-   * Encourage structured outputs
-   * Keep responses consistent across demos
-
-### Demo Prep
-
-* Create 5–6 pre-written demo prompts
-* Optionally add lightweight logging (tool called, table queried)
+```
+Claude SDK Demo/
+├── .cursor/              # Cursor IDE rules and configuration
+│   ├── rules            # Development constraints and guidelines
+│   └── README.md        # Quick reference
+├── .env                  # Environment variables (not in git)
+├── .gitignore           # Git ignore rules
+├── agent_chatbot.py     # Main application code
+├── requirements.txt     # Python dependencies
+├── README.md            # This file
+└── credentials.md       # Credentials reference (not in git)
+```
 
 ---
 
-## 7. Instructions for Cursor (Very Important)
+## How It Works
 
-> **Cursor: you are working on a proof-of-concept using the Claude Agent SDK.
-> The goal is to build a CLI-based internal assistant that queries Confluence via MCP (CData Connect AI) and produces structured summaries and Q&A responses.**
-
-### Cursor Tasks (In Order)
-
-1. Review the existing Claude Agent SDK example code
-2. Identify where the agent is initialized
-3. Add a custom **system prompt** aligned with the scope above
-4. Ensure MCP tools are loaded dynamically
-5. Test prompts that:
-   * List Confluence spaces
-   * Query pages
-   * Summarize documentation
-6. Refine output formatting for demos
-
-### Constraints Cursor Must Respect
-
-* Do NOT add new data sources
-* Do NOT write to Confluence
-* Do NOT store data locally
-* Do NOT expose credentials
-* Keep everything demo-safe and readable
+1. **MCP Client** (`MCPClient` class) connects to CData Connect AI's MCP server over HTTP
+2. **Tool Discovery** dynamically loads available Confluence tools (queryData, getTables, etc.)
+3. **Agent SDK Integration** wraps MCP tools for Claude Agent SDK
+4. **Custom System Prompt** guides Claude to:
+   - Summarize instead of dumping raw data
+   - Always cite Confluence as the source
+   - Structure responses clearly
+   - Ask clarifying questions when needed
+5. **Interactive Session** maintains conversation state for follow-up questions
 
 ---
 
-## 8. Suggested System Prompt (Cursor Can Refine)
+## Troubleshooting
 
-> You are an internal assistant with **read-only access to Confluence documentation**.
->
-> * Always summarize content instead of returning large raw text blocks
-> * Always indicate that information comes from Confluence
-> * Structure responses with headings and bullet points
-> * If information is missing or unclear, explicitly state that
-> * Do not output sensitive or personal data
+### Error: "CDATA_EMAIL not set in .env file"
+- Ensure `.env` file exists in project root
+- Verify all three environment variables are set
+- Restart terminal after creating `.env` file
+
+### Error: "Connection Issue" or "HTTP 400 Bad Request"
+- Verify CData Connect AI connection is authenticated
+- Check that Confluence connection is active in CData dashboard
+- Ensure your CData credentials are correct
+
+### Error: "ANTHROPIC_API_KEY not set"
+- Get API key from https://console.anthropic.com/
+- Add to `.env` file as `ANTHROPIC_API_KEY=sk-ant-api03-...`
+- Ensure no extra spaces or quotes around the key
+
+### No tools discovered
+- Verify MCP server URL is accessible
+- Check CData Connect AI account status
+- Ensure Confluence connection is configured in CData
+
+### Import errors
+- Activate virtual environment: `source venv/bin/activate`
+- Reinstall dependencies: `pip install -r requirements.txt`
+- Verify Python version: `python3 --version` (should be 3.8+)
 
 ---
 
-## 9. Suggested Demo Prompts (Copy/Paste Ready)
+## Development Notes
 
-* "What Confluence spaces are available to me?"
-* "List recent pages related to project kickoff or scope."
-* "Summarize the Project Kickoff and Scope documentation."
-* "What decisions have already been made according to Confluence?"
-* "What risks or open questions are documented?"
-* "What information is missing or unclear?"
+### System Prompt
+
+The custom system prompt (`SYSTEM_PROMPT`) in `agent_chatbot.py` ensures Claude:
+- Operates in read-only mode
+- Provides structured, summarized responses
+- Always attributes information to Confluence
+- Handles missing data gracefully
+
+### MCP Server Communication
+
+The application uses HTTP POST requests with JSON-RPC 2.0 protocol to communicate with CData Connect AI's MCP server. Server-Sent Events (SSE) responses are parsed to extract tool results.
+
+### Stateful Conversations
+
+Each interactive session maintains conversation state, allowing follow-up questions and context retention across multiple queries.
 
 ---
 
-## 10. What This POC Proves (Narrative)
+## Reference Documentation
 
-> Claude can safely and dynamically reason over real internal documentation using existing permissions, without copying data or requiring admin access, through a governed MCP-based architecture.
+- **CData Guide:** https://www.cdata.com/developers/ai/dev-guide-claude-agent-sdk-getting-started/
+- **Claude Agent SDK:** https://platform.claude.com/docs/en/agent-sdk/quickstart
+- **CData Connect AI:** https://cloud.cdata.com/
 
 ---
 
-## Getting Started
+## Next Steps
 
-Follow the CData guide: https://www.cdata.com/developers/ai/dev-guide-claude-agent-sdk-getting-started/
+Once the basic setup is working:
 
-### Prerequisites
+1. Test with real Confluence documentation
+2. Refine system prompt for better responses
+3. Add logging for tool calls and queries
+4. Create demo script with pre-written prompts
+5. Document any connection issues or improvements
 
-* Python 3.8+
-* Claude Agent SDK installed
-* CData Connect AI configured and authenticated
-* Confluence Cloud access (read-only)
+---
 
-### Next Steps
+## License & Usage
 
-1. Set up Claude Agent SDK environment
-2. Configure MCP server connection to CData Connect AI
-3. Test MCP tool discovery
-4. Implement custom system prompt
-5. Test with demo prompts
+This is a proof-of-concept project. Use responsibly and ensure all credentials are kept secure. Never commit `.env` files or credentials to version control.

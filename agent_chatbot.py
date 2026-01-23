@@ -86,12 +86,12 @@ class ConfluenceAgentChatbot:
         self.mcp_client = MCPClient(mcp_server_url, email, access_token)
         
         # Load available tools from MCP server
-        print("🔌 Connecting to CData Connect AI MCP server...")
+        print("Connecting to CData Connect AI MCP server...")
         self.mcp_tools_list = self.mcp_client.list_tools()
-        print(f"✅ Loaded {len(self.mcp_tools_list)} tools from MCP server")
+        print(f"Loaded {len(self.mcp_tools_list)} tools from MCP server")
         
         # Show available tools
-        print("\n📋 Available tools:")
+        print("\nAvailable tools:")
         for tool_info in self.mcp_tools_list[:10]:  # Show first 10
             print(f"   - {tool_info.get('name')}")
         if len(self.mcp_tools_list) > 10:
@@ -153,9 +153,9 @@ class ConfluenceAgentChatbot:
 
 async def interactive_mode(chatbot):
     """Run the chatbot in interactive mode with stateful sessions."""
-    print("\n🤖 Confluence Assistant Ready!")
-    print("💡 Try: 'What Confluence spaces are available to me?'")
-    print("💡 Type 'quit' to exit.\n")
+    print("\nConfluence Assistant Ready!")
+    print("Try: 'What Confluence spaces are available to me?'")
+    print("Type 'quit' to exit.\n")
     
     # Create a stateful session
     client = chatbot.create_session()
@@ -169,12 +169,12 @@ async def interactive_mode(chatbot):
                 continue
             
             if user_input.lower() in ['quit', 'exit', 'q']:
-                print("👋 Goodbye!")
+                print("Goodbye!")
                 break
             
-            print("\n🤔 Thinking...")
+            print("\nThinking...")
             response = await chatbot.chat_session(client, user_input)
-            print(f"\n📄 Assistant:\n{response}\n")
+            print(f"\nAssistant:\n{response}\n")
 
 
 async def main():
@@ -186,19 +186,19 @@ async def main():
     
     # Validate environment variables
     if not CDATA_EMAIL:
-        print("❌ Error: CDATA_EMAIL not set in .env file")
+        print("Error: CDATA_EMAIL not set in .env file")
         return
     if not CDATA_ACCESS_TOKEN:
-        print("❌ Error: CDATA_ACCESS_TOKEN not set in .env file")
+        print("Error: CDATA_ACCESS_TOKEN not set in .env file")
         return
     if not ANTHROPIC_API_KEY:
-        print("❌ Error: ANTHROPIC_API_KEY not set in .env file")
+        print("Error: ANTHROPIC_API_KEY not set in .env file")
         return
     
     print("=" * 60)
-    print("🚀 Claude Confluence Assistant")
+    print("Claude Confluence Assistant")
     print("=" * 60)
-    print(f"📡 MCP Server: {MCP_SERVER_URL}\n")
+    print(f"MCP Server: {MCP_SERVER_URL}\n")
     
     chatbot = ConfluenceAgentChatbot(MCP_SERVER_URL, CDATA_EMAIL, CDATA_ACCESS_TOKEN)
     await interactive_mode(chatbot)

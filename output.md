@@ -8,14 +8,14 @@ added 3 packages in 2s
 /usr/local/bin/claude
 (venv) yorkmacbook020@MacBookPro Claude SDK Demo % python agent_chatbot.py                
 ============================================================
-🚀 Claude Confluence Assistant
+Claude Confluence Assistant
 ============================================================
-📡 MCP Server: https://mcp.cloud.cdata.com/mcp/
+MCP Server: https://mcp.cloud.cdata.com/mcp/
 
-🔌 Connecting to CData Connect AI MCP server...
-✅ Loaded 9 tools from MCP server
+Connecting to CData Connect AI MCP server...
+Loaded 9 tools from MCP server
 
-📋 Available tools:
+Available tools:
    - getInstructions
    - queryData
    - getCatalogs
@@ -26,15 +26,15 @@ added 3 packages in 2s
    - getSchemas
    - getTables
 
-🤖 Confluence Assistant Ready!
-💡 Try: 'What Confluence spaces are available to me?'
-💡 Type 'quit' to exit.
+Confluence Assistant Ready!
+Try: 'What Confluence spaces are available to me?'
+Type 'quit' to exit.
 
 You: What Confluence spaces are available to me?
 
-🤔 Thinking...
+Thinking...
 
-📄 Assistant:
+Assistant:
 I encountered an error accessing the Confluence connection. The error indicates there's an issue with the Confluence connection that needs to be resolved:
 
 ## Connection Issue
@@ -56,9 +56,9 @@ Would you like me to try again, or would you prefer to check the connection conf
 
 You: Can you please try again
 
-🤔 Thinking...
+Thinking...
 
-📄 Assistant:
+Assistant:
 Perfect! I successfully retrieved the Confluence spaces. Here are the spaces available to you:
 
 ## Available Confluence Spaces
@@ -89,16 +89,16 @@ Would you like me to explore any of these spaces further? I can help you:
 
 You: Show me what's in the Projects & Clients space
 
-🤔 Thinking...
+Thinking...
 
-📄 Assistant:
+Assistant:
 Perfect! Here's what's in the **Projects & Clients (PC)** space:
 
 ## Projects & Clients Space Contents
 
 This space contains **50+ pages** (showing most recent). The content is organized into several categories:
 
-### 📋 Recent Project Pages
+### Recent Project Pages
 - **YICKH - Governance using Confluence** (Updated: Jan 22, 2026)
 - **Application Inventory** (Updated: Jan 22, 2026)
 - **Cobolision and Insurance Pre-Kickoff** (Updated: Jan 22, 2026)
@@ -109,7 +109,7 @@ This space contains **50+ pages** (showing most recent). The content is organize
 - **Vytalize DOSA to Engineering Handoff** (Jan 20, 2026)
 - **3M - GMCE User Stories** (Jan 13, 2026)
 
-### 📝 Project Templates
+### Project Templates
 - **Project Kickoff Meeting Templates**
   - Simple Project Kickoff Template
   - Detailed Project Kickoff Template
@@ -123,12 +123,12 @@ This space contains **50+ pages** (showing most recent). The content is organize
 - **End of Project Templates**
   - Client Retrospective Guide
 
-### 🏢 Organization & Structure
+### Organization & Structure
 - **RACI Matrix Guide & Templates**
   - RACI Matrix Confluence Template
 - **Organization & Structure Templates**
 
-### 🛠️ Technical Documentation
+### Technical Documentation
 - **SnapLogic**
   - SnapLogic Versioning, CI/CD, and Unit Testing
   - SnapLogic Sandbox Reference
@@ -147,7 +147,7 @@ This space contains **50+ pages** (showing most recent). The content is organize
   - Auto Completion Tools, Linting Tools
   - Javadoc
 
-### 📊 Summary
+### Summary
 The space contains a mix of:
 - **Active project documentation** (YICKH, Cobolision, Vytalize, 3M)
 - **Reusable templates** for project management
@@ -164,14 +164,14 @@ Would you like me to:
 
 You: Find pages related to project kickoff or scope in any space
 
-🤔 Thinking...
+Thinking...
 
-📄 Assistant:
+Assistant:
 Great! I found **6 pages** related to project kickoff or scope across your Confluence spaces. Here's what's available:
 
 ## Pages Related to Project Kickoff or Scope
 
-### 🎯 Active Project Pages
+### Active Project Pages
 
 1. **Cobolision and Insurance Pre-Kickoff**
    - **Space:** Projects & Clients (PC)
@@ -194,7 +194,7 @@ Great! I found **6 pages** related to project kickoff or scope across your Confl
    - **URL:** `/spaces/KB/pages/371458071/COPTN+-+Initial+Scope+Proposal`
    - *Scope proposal in the Developer Hub space*
 
-### 📋 Template Pages
+### Template Pages
 
 4. **Detailed Project Kickoff Template**
    - **Space:** Projects & Clients (PC)
@@ -217,7 +217,7 @@ Great! I found **6 pages** related to project kickoff or scope across your Confl
    - **URL:** `/spaces/PC/pages/341114881/Project+Kickoff+Meeting+Templates`
    - *Collection of kickoff meeting templates*
 
-### 📊 Summary
+### Summary
 
 **Active Projects:** 3 pages (2 in Projects & Clients, 1 in Developer Hub)
 **Templates:** 3 reusable template pages
@@ -232,9 +232,9 @@ Would you like me to:
 
 You: View the YICK kickoff details and what the project entails
 
-🤔 Thinking...
+Thinking...
 
-📄 Assistant:
+Assistant:
 # YICKH - Project Kickoff Details
 
 **Last Updated:** January 21, 2026  
@@ -243,12 +243,12 @@ You: View the YICK kickoff details and what the project entails
 
 ---
 
-## 📋 Project Type
+## Project Type
 This is a **time & materials project** with less defined goals or timelines, requiring flexible planning and iteration.
 
 ---
 
-## 🎯 Meeting Objectives
+## Meeting Objectives
 
 The kickoff aims to:
 - Align on project vision, scope, and success criteria
@@ -257,7 +257,7 @@ The kickoff aims to:
 
 ---
 
-## 👥 Team Structure
+## Team Structure
 
 The page includes a **team introduction table** for documenting:
 - **Name** - Team member names
@@ -267,7 +267,7 @@ The page includes a **team introduction table** for documenting:
 
 ---
 
-## 📊 Project Overview
+## Project Overview
 
 The project involves multiple technical components:
 
@@ -285,7 +285,7 @@ The project involves multiple technical components:
 
 ---
 
-## 🔗 Communication & Collaboration Plan
+## Communication & Collaboration Plan
 
 The project will establish:
 
@@ -297,7 +297,7 @@ The project will establish:
 
 ---
 
-## 🚀 First Two Weeks Plan
+## First Two Weeks Plan
 
 ### **Week 1 Focus:**
 - Team onboarding and access setup
@@ -312,7 +312,7 @@ The project will establish:
 
 ---
 
-## ✅ Next Steps & Action Items
+## Next Steps & Action Items
 
 Key action items to track:
 
@@ -324,7 +324,7 @@ Key action items to track:
 
 ---
 
-## 🔍 What the Project Entails
+## What the Project Entails
 
 Based on this kickoff document, **YICKH** appears to be:
 
