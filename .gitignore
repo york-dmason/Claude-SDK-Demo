@@ -1,0 +1,29 @@
+# Cursor Files
+.cursor
+
+# Environment variables (contains API keys)
+.env
+
+# Credentials file (contains sensitive data)
+credentials.md
+
+# Python virtual environment
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Optional: exclude output if it contains sensitive test data
+# output.md
