@@ -27,3 +27,6 @@ Thumbs.db
 
 # Optional: exclude output if it contains sensitive test data
 # output.md
+
+# Output files
+scripts/output/ 
