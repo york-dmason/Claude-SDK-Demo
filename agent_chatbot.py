@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Confluence Assistant - Streamlined POC for querying Confluence via CData Connect AI."""
+"""
+Confluence Assistant - AI agent for querying Confluence, Jira, and GitHub via CData Connect AI.
+Integrates with TSG Capacity Management Tool for active projects filtering.
+"""
 
 import os
 import json
@@ -11,17 +14,17 @@ from dotenv import load_dotenv
 from claude_agent_sdk import ClaudeSDKClient, ClaudeAgentOptions, tool, create_sdk_mcp_server
 from functools import partial
 
+# Add project root to path for imports
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+from scripts.active_projects_cache import active_projects_cache
+from scripts.active_projects_tools import (
+    get_active_projects_tool_definitions,
+    get_active_projects_tool_handlers,
+)
+from scripts.system_prompts import build_scalable_system_prompt, LEGACY_SYSTEM_PROMPT
+
 load_dotenv()
-
-# Custom system prompt for Confluence assistant
-SYSTEM_PROMPT = """You are an internal assistant with **read-only access to Confluence documentation**.
-
-* Always summarize content instead of returning large raw text blocks
-* Always indicate that information comes from Confluence
-* Structure responses with headings and bullet points
-* If information is missing or unclear, explicitly state that
-* Do not output sensitive or personal data
-* You can only READ from Confluence - you cannot write or modify anything"""
 
 
 class MCPClient:
@@ -80,24 +83,36 @@ class MCPClient:
 
 
 class ConfluenceAgentChatbot:
-    """Confluence-focused AI agent chatbot using CData Connect AI."""
+    """
+    AI agent chatbot using CData Connect AI for Confluence, Jira, and GitHub.
+    Integrates active projects filtering from TSG Capacity Management Tool.
+    """
     
     def __init__(self, mcp_server_url: str, email: str = None, access_token: str = None):
         self.mcp_client = MCPClient(mcp_server_url, email, access_token)
         
-        # Load available tools from MCP server
+        # Load available tools from MCP server (CData)
         print("Connecting to CData Connect AI MCP server...")
         self.mcp_tools_list = self.mcp_client.list_tools()
-        print(f"Loaded {len(self.mcp_tools_list)} tools from MCP server")
+        print(f"Loaded {len(self.mcp_tools_list)} tools from CData MCP server")
+        
+        # Get active projects tool definitions
+        self.active_projects_tool_defs = get_active_projects_tool_definitions()
+        self.active_projects_handlers = get_active_projects_tool_handlers()
         
         # Show available tools
         print("\nAvailable tools:")
-        for tool_info in self.mcp_tools_list[:10]:  # Show first 10
-            print(f"   - {tool_info.get('name')}")
-        if len(self.mcp_tools_list) > 10:
-            print(f"   ... and {len(self.mcp_tools_list) - 10} more")
+        print("  [CData Connect AI]")
+        for tool_info in self.mcp_tools_list[:8]:  # Show first 8 CData tools
+            print(f"    - {tool_info.get('name')}")
+        if len(self.mcp_tools_list) > 8:
+            print(f"    ... and {len(self.mcp_tools_list) - 8} more")
         
-        # Create Agent SDK tool wrappers
+        print("  [Active Projects (TCM)]")
+        for tool_def in self.active_projects_tool_defs:
+            print(f"    - {tool_def.get('name')}")
+        
+        # Create Agent SDK tool wrappers (CData + Active Projects)
         self.agent_tools = self._create_agent_tools()
         
         # Create MCP server for Agent SDK
@@ -106,8 +121,8 @@ class ConfluenceAgentChatbot:
             tools=self.agent_tools
         )
     
-    async def _tool_handler(self, tool_name: str, args: dict) -> dict:
-        """Call the MCP tool and return results."""
+    async def _cdata_tool_handler(self, tool_name: str, args: dict) -> dict:
+        """Call a CData MCP tool and return results."""
         result = self.mcp_client.call_tool(tool_name, args)
         return {
             "content": [{
@@ -116,9 +131,23 @@ class ConfluenceAgentChatbot:
             }]
         }
     
+    async def _active_projects_tool_handler(self, tool_name: str, args: dict) -> dict:
+        """Call an active projects tool and return results."""
+        handler = self.active_projects_handlers.get(tool_name)
+        if handler:
+            return await handler(args)
+        return {
+            "content": [{
+                "type": "text",
+                "text": f"Unknown tool: {tool_name}"
+            }]
+        }
+    
     def _create_agent_tools(self) -> list:
-        """Create Agent SDK tool wrappers for MCP tools."""
+        """Create Agent SDK tool wrappers for all tools (CData + Active Projects)."""
         agent_tools = []
+        
+        # Wrap CData MCP tools
         for tool_info in self.mcp_tools_list:
             tool_name = tool_info.get("name")
             tool_description = tool_info.get("description", "")
@@ -128,15 +157,36 @@ class ConfluenceAgentChatbot:
                 name=tool_name,
                 description=tool_description,
                 input_schema=tool_schema
-            )(partial(self._tool_handler, tool_name))
+            )(partial(self._cdata_tool_handler, tool_name))
             
             agent_tools.append(agent_tool)
+        
+        # Wrap Active Projects tools
+        for tool_def in self.active_projects_tool_defs:
+            tool_name = tool_def.get("name")
+            tool_description = tool_def.get("description", "")
+            tool_schema = tool_def.get("inputSchema", {})
+            
+            agent_tool = tool(
+                name=tool_name,
+                description=tool_description,
+                input_schema=tool_schema
+            )(partial(self._active_projects_tool_handler, tool_name))
+            
+            agent_tools.append(agent_tool)
+        
         return agent_tools
     
-    def create_session(self) -> ClaudeSDKClient:
-        """Create a stateful conversation session."""
+    def create_session(self, system_prompt: str = None) -> ClaudeSDKClient:
+        """
+        Create a stateful conversation session.
+        
+        Args:
+            system_prompt: Custom system prompt (uses default if not provided)
+        """
+        prompt = system_prompt or LEGACY_SYSTEM_PROMPT
         options = ClaudeAgentOptions(
-            system_prompt=SYSTEM_PROMPT,
+            system_prompt=prompt,
             mcp_servers={"cdata_connect": self.mcp_server},
             permission_mode="bypassPermissions"  # Auto-approve for CLI
         )
@@ -151,14 +201,26 @@ class ConfluenceAgentChatbot:
         return ""
 
 
-async def interactive_mode(chatbot):
-    """Run the chatbot in interactive mode with stateful sessions."""
-    print("\nConfluence Assistant Ready!")
-    print("Try: 'What Confluence spaces are available to me?'")
-    print("Type 'quit' to exit.\n")
+async def interactive_mode(chatbot, system_prompt: str = None):
+    """
+    Run the chatbot in interactive mode with stateful sessions.
     
-    # Create a stateful session
-    client = chatbot.create_session()
+    Args:
+        chatbot: The ConfluenceAgentChatbot instance
+        system_prompt: Custom system prompt to use for the session
+    """
+    print("\n" + "=" * 60)
+    print("Assistant Ready!")
+    print("=" * 60)
+    print("\nExample queries:")
+    print("  - 'What active projects do we have?'")
+    print("  - 'Tell me about the Thrivent project'")
+    print("  - 'What Confluence pages exist for Medtronic?'")
+    print("  - 'Is Acme Corp an active project?'")
+    print("\nType 'quit' to exit.\n")
+    
+    # Create a stateful session with the dynamic system prompt
+    client = chatbot.create_session(system_prompt=system_prompt)
     
     # Use async context manager for proper resource cleanup
     async with client:
@@ -178,7 +240,7 @@ async def interactive_mode(chatbot):
 
 
 async def main():
-    """Run the chatbot in interactive mode."""
+    """Run the chatbot in interactive mode with active projects integration."""
     MCP_SERVER_URL = "https://mcp.cloud.cdata.com/mcp/"
     CDATA_EMAIL = os.environ.get("CDATA_EMAIL")
     CDATA_ACCESS_TOKEN = os.environ.get("CDATA_ACCESS_TOKEN")
@@ -196,12 +258,33 @@ async def main():
         return
     
     print("=" * 60)
-    print("Claude Confluence Assistant")
+    print("Claude Agent - Active Projects Assistant")
     print("=" * 60)
-    print(f"MCP Server: {MCP_SERVER_URL}\n")
+    print(f"CData MCP Server: {MCP_SERVER_URL}\n")
     
+    # Load active projects from TSG Capacity Management Tool
+    print("Loading active projects from TSG Capacity Management Tool...")
+    try:
+        project_count = active_projects_cache.load()
+        sample_names = active_projects_cache.get_sample_names(10)
+        print(f"Loaded {project_count} active projects/clients")
+        print(f"Sample: {', '.join(sample_names[:5])}...")
+    except Exception as e:
+        print(f"Warning: Could not load active projects: {e}")
+        print("Continuing without active projects filtering...")
+        project_count = 0
+        sample_names = []
+    
+    # Build dynamic system prompt with active projects context
+    system_prompt = build_scalable_system_prompt(project_count, sample_names)
+    
+    print()  # Blank line before chatbot init
+    
+    # Initialize chatbot with CData tools + Active Projects tools
     chatbot = ConfluenceAgentChatbot(MCP_SERVER_URL, CDATA_EMAIL, CDATA_ACCESS_TOKEN)
-    await interactive_mode(chatbot)
+    
+    # Start interactive mode with the dynamic system prompt
+    await interactive_mode(chatbot, system_prompt=system_prompt)
 
 
 if __name__ == "__main__":
